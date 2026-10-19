@@ -34,6 +34,15 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error('[v0] Image generation failed:', error)
+
+    const message = error instanceof Error ? error.message : ''
+    if (message.includes('valid credit card') || message.includes('customer_verification_required')) {
+      return NextResponse.json(
+        { error: 'AI image generation is ready, but your Vercel AI Gateway account needs a valid credit card on file. Add billing at Vercel AI Gateway, then try Generate concept again.' },
+        { status: 402 },
+      )
+    }
+
     return NextResponse.json({ error: 'Image generation failed. Please try again.' }, { status: 500 })
   }
 }
