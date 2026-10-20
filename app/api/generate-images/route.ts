@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     }
 
     const images = Array.isArray(result.data)
-      ? result.data.filter((image: unknown): image is { b64_json: string } => Boolean(image && typeof image === 'object' && 'b64_json' in image && typeof image.b64_json === 'string')).map((image) => ({
+      ? result.data.filter((image: unknown): image is { b64_json: string } => Boolean(image && typeof image === 'object' && 'b64_json' in image && typeof image.b64_json === 'string')).map((image: { b64_json: string }) => ({
           base64: image.b64_json,
           mediaType: 'image/png',
         }))
