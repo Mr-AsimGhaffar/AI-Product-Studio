@@ -72,6 +72,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ images })
   } catch (error) {
     console.error('[v0] Image generation failed:', error)
-    return NextResponse.json({ error: 'Image generation failed. Please try again.' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Unknown image generation error.'
+    return NextResponse.json({ error: `Image generation failed: ${message}` }, { status: 500 })
   }
 }
