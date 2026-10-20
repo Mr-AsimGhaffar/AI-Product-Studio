@@ -45,7 +45,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Add a product before generating images.' }, { status: 400 })
     }
 
-    const cloudflareApiKey = process.env.CFARE_API_KEY
+    // CFARE_API_KEY is the canonical project variable. The fallback keeps existing
+    // previews working when the variable was provisioned with its earlier casing.
+    const cloudflareApiKey = process.env.CFARE_API_KEY || process.env.CFare_API_KEY
     if (!cloudflareApiKey) {
       return NextResponse.json({ error: 'Cloudflare image generation is not configured. Add CFARE_API_KEY to the project environment.' }, { status: 503 })
     }
