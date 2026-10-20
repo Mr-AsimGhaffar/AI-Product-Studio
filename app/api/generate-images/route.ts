@@ -45,8 +45,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Add a product before generating images.' }, { status: 400 })
     }
 
-    if (!process.env.CFare_API_KEY) {
-      return NextResponse.json({ error: 'Cloudflare image generation is not configured. Add CFARE_API_KEY to the project environment.' }, { status: 503 })
+    const cloudflareApiKey = process.env.CFare_API_KEY || process.env.CFARE_API_KEY
+    if (!cloudflareApiKey) {
+      return NextResponse.json({ error: 'Cloudflare image generation is not configured. Add CFare_API_KEY to the project environment.' }, { status: 503 })
     }
 
     const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
