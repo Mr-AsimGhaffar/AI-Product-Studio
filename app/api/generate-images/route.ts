@@ -77,15 +77,31 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: message }, { status: response.status })
     }
 
-    const imageBuffer = await response.arrayBuffer()
-    if (!imageBuffer.byteLength) {
-      return NextResponse.json({ error: 'Cloudflare returned an empty image.' }, { status: 502 })
+    const contentType = response.headers.get('content-type') || ''
+    let image = ''
+    let mediaType = 'image/png'
+
+    if (contentType.includes('application/json')) {
+      const result = await response.json().catch(() => null)
+      image = typeof result?.result?.image === 'string'
+        ? result.result.image
+        : typeof result?.image === 'string'
+          ? result.image
+          : ''
+      mediaType = typeof result?.result?.mime_type === 'string' ? result.result.mime_type : mediaType
+    } else {
+      const imageBuffer = await response.arrayBuffer()
+      image = Buffer.from(imageBuffer).toString('base64')
+      if (contentType.startsWith('image/')) mediaType = contentType.split(';')[0]
     }
 
-    const image = Buffer.from(imageBuffer).toString('base64')
+    if (!image) {
+      return NextResponse.json({ error: 'Cloudflare returned no image data.' }, { status: 502 })
+    }
+
     return NextResponse.json({
       description,
-      images: Array.from({ length: count }, () => ({ base64: image, mediaType: 'image/png' })),
+      images: Array.from({ length: count }, () => ({ base64: image, mediaType })),
     })
   } catch (error) {
     console.error('[v0] Image generation failed:', error)
