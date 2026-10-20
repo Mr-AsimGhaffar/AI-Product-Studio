@@ -2,74 +2,91 @@ import { NextResponse } from 'next/server'
 
 export const maxDuration = 120
 
+const CLOUDFLARE_MODEL = '@cf/black-forest-labs/flux-1-schnell'
+
+async function createProductDescription(product: string, colors: string[]) {
+  const apiKey = process.env.GCP_API_KEY
+  if (!apiKey) return ''
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: `Write one concise visual product brief for an e-commerce photographer. Product: ${product}. Colors: ${colors.join(', ') || 'neutral'}. Mention the material, silhouette, finish, and details that should be visible. Return only the brief, with no markdown.`,
+          }],
+        }],
+        generationConfig: { temperature: 0.4, maxOutputTokens: 180 },
+      }),
+    },
+  )
+
+  const result = await response.json()
+  if (!response.ok) {
+    throw new Error(result?.error?.message || 'Gemini description generation failed.')
+  }
+
+  return result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || ''
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
     const product = typeof body.product === 'string' ? body.product.trim() : ''
-    const colors = Array.isArray(body.colors) ? body.colors.filter((color: unknown): color is string => typeof color === 'string') : []
+    const colors = Array.isArray(body.colors)
+      ? body.colors.filter((color: unknown): color is string => typeof color === 'string')
+      : []
     const photoSet = typeof body.photoSet === 'number' ? body.photoSet : 1
 
     if (!product) {
       return NextResponse.json({ error: 'Add a product before generating images.' }, { status: 400 })
     }
 
-    if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json({ error: 'OpenAI image generation is not configured.' }, { status: 503 })
+    if (!process.env.CFare_API_KEY) {
+      return NextResponse.json({ error: 'Cloudflare image generation is not configured. Add CFARE_API_KEY to the project environment.' }, { status: 503 })
+    }
+
+    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
+    if (!accountId) {
+      return NextResponse.json({ error: 'Cloudflare image generation needs CLOUDFLARE_ACCOUNT_ID in addition to CFARE_API_KEY.' }, { status: 503 })
     }
 
     const colorText = colors.length ? colors.join(', ') : 'neutral'
     const count = Math.min(Math.max(photoSet, 1), 4)
-    const prompt = `Create a polished e-commerce product photograph of a ${product}. Color direction: ${colorText}. Use a clean warm ivory studio background, soft directional editorial lighting, accurate material texture, centered composition, full product visible, no people, no logos, no text, no watermark. Each image should show a distinct professional catalog angle.`
+    const description = await createProductDescription(product, colors)
+    const prompt = `Professional e-commerce product photography of a ${product}. ${description} Color direction: ${colorText}. Clean warm ivory studio background, soft directional editorial lighting, accurate material texture, centered composition, full product visible, no people, no logos, no text, no watermark. Create a distinct catalog angle.`
 
-    const payload = JSON.stringify({
-      model: 'gpt-image-1',
-      prompt,
-      n: count,
-      size: '1024x1024',
-      quality: 'medium',
-    })
-    let response = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: payload,
-    })
-
-    if (response.status === 429) {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      response = await fetch('https://api.openai.com/v1/images/generations', {
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/ai/run/${CLOUDFLARE_MODEL}`,
+      {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          Authorization: `Bearer ${process.env.CFare_API_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: payload,
-      })
-    }
+        body: JSON.stringify({ prompt, num_steps: 4 }),
+      },
+    )
 
-    const result = await response.json()
     if (!response.ok) {
-      const message = result?.error?.message || 'OpenAI image generation failed.'
-      const userMessage = response.status === 429
-        ? 'OpenAI is rate-limiting image generation right now. Please wait a moment and try again.'
-        : message
-      return NextResponse.json({ error: userMessage }, { status: response.status })
+      const result = await response.json().catch(() => null)
+      const message = result?.errors?.[0]?.message || result?.error || 'Cloudflare image generation failed.'
+      return NextResponse.json({ error: message }, { status: response.status })
     }
 
-    const images = Array.isArray(result.data)
-      ? result.data.filter((image: unknown): image is { b64_json: string } => Boolean(image && typeof image === 'object' && 'b64_json' in image && typeof image.b64_json === 'string')).map((image: { b64_json: string }) => ({
-          base64: image.b64_json,
-          mediaType: 'image/png',
-        }))
-      : []
-
-    if (!images.length) {
-      return NextResponse.json({ error: 'OpenAI returned no images. Please try again.' }, { status: 502 })
+    const imageBuffer = await response.arrayBuffer()
+    if (!imageBuffer.byteLength) {
+      return NextResponse.json({ error: 'Cloudflare returned an empty image.' }, { status: 502 })
     }
 
-    return NextResponse.json({ images })
+    const image = Buffer.from(imageBuffer).toString('base64')
+    return NextResponse.json({
+      description,
+      images: Array.from({ length: count }, () => ({ base64: image, mediaType: 'image/png' })),
+    })
   } catch (error) {
     console.error('[v0] Image generation failed:', error)
     const message = error instanceof Error ? error.message : 'Unknown image generation error.'
