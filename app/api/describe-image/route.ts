@@ -3,30 +3,29 @@ import { NextResponse } from 'next/server'
 export const maxDuration = 60
 
 const schema = {
-  type: 'object',
-  additionalProperties: false,
+  type: 'OBJECT',
   required: ['title', 'tagline', 'description', 'features', 'materials', 'style', 'targetAudience', 'tags', 'keywords', 'altText', 'careInstructions', 'category'],
   properties: {
-    title: { type: 'string' },
-    tagline: { type: 'string' },
-    description: { type: 'string' },
-    features: { type: 'array', items: { type: 'string' } },
-    materials: { type: 'array', items: { type: 'string' } },
-    style: { type: 'string' },
-    targetAudience: { type: 'string' },
-    tags: { type: 'array', items: { type: 'string' } },
-    keywords: { type: 'array', items: { type: 'string' } },
-    altText: { type: 'string' },
-    careInstructions: { type: 'string' },
-    category: { type: 'string' },
+    title: { type: 'STRING' },
+    tagline: { type: 'STRING' },
+    description: { type: 'STRING' },
+    features: { type: 'ARRAY', items: { type: 'STRING' } },
+    materials: { type: 'ARRAY', items: { type: 'STRING' } },
+    style: { type: 'STRING' },
+    targetAudience: { type: 'STRING' },
+    tags: { type: 'ARRAY', items: { type: 'STRING' } },
+    keywords: { type: 'ARRAY', items: { type: 'STRING' } },
+    altText: { type: 'STRING' },
+    careInstructions: { type: 'STRING' },
+    category: { type: 'STRING' },
   },
 }
 
 export async function POST(request: Request) {
   try {
-    const apiKey = process.env.OPENAI_API_KEY
+    const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) {
-      return NextResponse.json({ error: 'OpenAI is not configured. Set OPENAI_API_KEY in .env and restart the dev server.' }, { status: 500 })
+      return NextResponse.json({ error: 'Gemini is not configured. Set GEMINI_API_KEY in .env and restart the dev server.' }, { status: 500 })
     }
 
     const body = await request.json()
@@ -47,24 +46,36 @@ Photo angle: ${angle || 'catalog view'}
 Target marketplace: ${platform}
 Base the content on what is visible in the image and the product name. Keep the description to 2-3 sentences, 4-6 features, 3-5 materials (best inference), 6-8 tags, 6-10 SEO keywords, a concise alt text, one care instruction sentence and a product category. Avoid unverifiable claims.`
 
-    const content: Array<Record<string, unknown>> = [{ type: 'text', text: instruction }]
-    if (base64) content.push({ type: 'image_url', image_url: { url: `data:${mediaType};base64,${base64}`, detail: 'low' } })
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content }],
-        response_format: { type: 'json_schema', json_schema: { name: 'product_details', strict: true, schema } },
+        contents: [{
+          role: 'user',
+          parts: [
+            { text: instruction },
+            ...(base64 ? [{ inlineData: { mimeType: mediaType, data: base64 } }] : []),
+          ],
+        }],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: schema,
+        },
       }),
     })
     const data = await response.json().catch(() => null)
     if (!response.ok) {
-      throw new Error(`OpenAI request failed (${response.status}): ${data?.error?.message ?? 'Unknown error'}`)
+      throw new Error(`Gemini request failed (${response.status}): ${data?.error?.message ?? 'Unknown error'}`)
     }
 
-    const details = JSON.parse(data.choices[0].message.content)
+    const content = data?.candidates?.[0]?.content?.parts
+      ?.map((part: { text?: unknown }) => part.text)
+      .find((text: unknown): text is string => typeof text === 'string')
+    if (!content) {
+      throw new Error('Gemini returned an empty response. Check that GEMINI_MODEL supports image input and structured output.')
+    }
+    const details = JSON.parse(content)
     return NextResponse.json({ details })
   } catch (error) {
     console.error('Image description failed:', error)
