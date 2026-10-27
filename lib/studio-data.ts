@@ -31,16 +31,11 @@ export const LANGUAGES = ['English', 'Urdu', 'Arabic', 'Spanish']
 export const DESIGN_COUNTS = [1, 2, 3, 4, 5]
 
 export type Project = {
+  id: string
   name: string
   type: string
   status: 'Ready' | 'Generating'
   images: number
   date: string
-  image: string
+  image: string | null
 }
-
-export const PROJECTS: Project[] = [
-  { name: 'Autumn outerwear / 01', type: 'Jacket · 3 colors', status: 'Ready', images: 18, date: 'Oct 18', image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=900&q=80' },
-  { name: 'Everyday knitwear', type: 'Sweater · 2 colors', status: 'Generating', images: 8, date: 'Oct 17', image: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&w=900&q=80' },
-  { name: 'Studio essentials', type: 'Trousers · 4 colors', status: 'Ready', images: 24, date: 'Oct 15', image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=900&q=80' },
-]

@@ -3,15 +3,21 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PROJECTS, type Project } from "@/lib/studio-data";
+import { type Project } from "@/lib/studio-data";
+import { ErrorAlert } from "../shared/error-alert";
 import { PageHeading } from "../shared/page-heading";
 import { ProjectCard } from "../shared/project-card";
 import { StatCard } from "../shared/stat-card";
+import { ViewSkeleton } from "../shared/view-skeleton";
 
 type DashboardViewProps = {
-  latestProject?: Project;
+  projects: Project[];
+  loading: boolean;
+  error: string;
+  describedCount: number;
   onCreate: () => void;
   onOpenLibrary: () => void;
+  onOpenProject: (id: string) => void;
 };
 
 const RECENT_LIMIT = 3;
@@ -38,14 +44,20 @@ function useGreeting() {
 }
 
 export function DashboardView({
-  latestProject,
+  projects,
+  loading,
+  error,
+  describedCount,
   onCreate,
   onOpenLibrary,
+  onOpenProject,
 }: DashboardViewProps) {
   const { eyebrow, title } = useGreeting();
-  const recentProjects = (
-    latestProject ? [latestProject, ...PROJECTS] : PROJECTS
-  ).slice(0, RECENT_LIMIT);
+  const recentProjects = projects.slice(0, RECENT_LIMIT);
+  const totalImages = projects.reduce(
+    (sum, project) => sum + project.images,
+    0,
+  );
 
   return (
     <>
@@ -68,16 +80,20 @@ export function DashboardView({
 
       <dl className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard
-          label="Projects this month"
-          value="12"
-          note="+4 from last month"
+          label="Projects"
+          value={String(projects.length)}
+          note="Saved to your library"
         />
         <StatCard
           label="Images generated"
-          value="186"
-          note="Across 8 products"
+          value={String(totalImages)}
+          note={`Across ${projects.length} ${projects.length === 1 ? "product" : "products"}`}
         />
-        <StatCard label="Listing drafts" value="24" note="6 marketplaces" />
+        <StatCard
+          label="Ready to list"
+          value={String(describedCount)}
+          note={`of ${totalImages} ${totalImages === 1 ? "image has" : "images have"} listing details`}
+        />
       </dl>
 
       <section aria-labelledby="recent-projects" className="mt-12">
@@ -105,16 +121,30 @@ export function DashboardView({
             />
           </button>
         </div>
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {recentProjects.map((project, index) => (
-            <ProjectCard
-              key={project.name}
-              project={project}
-              priority={index < RECENT_LIMIT}
-              onOpen={onOpenLibrary}
-            />
-          ))}
-        </div>
+        {error ? (
+          <ErrorAlert
+            title="Couldn’t load your projects"
+            message={error}
+            hint="Start the backend (npm run dev in /backend) and refresh."
+          />
+        ) : loading ? (
+          <ViewSkeleton />
+        ) : recentProjects.length === 0 ? (
+          <p className="rounded-2xl border border-dashed border-input p-8 text-center text-sm text-muted-foreground">
+            No projects yet. Start creating to build your first set.
+          </p>
+        ) : (
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {recentProjects.map((project, index) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                priority={index < RECENT_LIMIT}
+                onOpen={onOpenProject}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       <section
