@@ -51,7 +51,7 @@ export default function CreationWizard({ step, onStepChange: setStep, generation
           </button>
           <Stepper step={step} />
           <span className="text-sm text-muted-foreground md:hidden">Step {step + 1} of {WIZARD_STEPS.length}</span>
-          <span className="hidden text-sm text-muted-foreground md:inline">Draft saved</span>
+          <span className="hidden text-sm text-muted-foreground md:inline">Your brief</span>
         </div>
         <StepProgressBar step={step} />
       </header>
@@ -65,13 +65,17 @@ export default function CreationWizard({ step, onStepChange: setStep, generation
             <div key={step} className="animate-fade-up">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-text">Step {step + 1} of {WIZARD_STEPS.length}</p>
               <h1 ref={heading} tabIndex={-1} className="mt-3 text-balance font-serif text-3xl tracking-[-0.045em] outline-none sm:text-4xl">{title}</h1>
-              <p className="mt-3 max-w-xl text-pretty text-muted-foreground">{description}</p>
+              <p className="mt-3 max-w-xl text-pretty text-muted-foreground">
+                {step === LAST_STEP
+                  ? 'Review everything before generating your complete product image set.'
+                  : description}
+              </p>
               <div className="mt-8 md:mt-10"><StepComponent {...stepProps} /></div>
             </div>
 
             {generationError && (
               <div className="mt-8">
-                <ErrorAlert title="We couldn’t generate your images" message={generationError} hint="Check your settings and try again — your selections are saved." />
+                <ErrorAlert title="We couldn’t generate your images" message={generationError} hint="Check your settings and try again. Your current selections are still here." />
               </div>
             )}
 
@@ -82,7 +86,7 @@ export default function CreationWizard({ step, onStepChange: setStep, generation
                 {step < LAST_STEP ? (
                   <Button type="submit" size="xl" disabled={Boolean(blocker)} className="rounded-full px-6">Continue <ArrowRight aria-hidden data-icon="inline-end" /></Button>
                 ) : (
-                  <Button type="submit" variant="brand" size="xl" className="rounded-full px-6"><Sparkles aria-hidden data-icon="inline-start" /> Generate concept</Button>
+                  <Button type="submit" variant="brand" size="xl" className="rounded-full px-6"><Sparkles aria-hidden data-icon="inline-start" /> Generate image set</Button>
                 )}
               </div>
             </div>

@@ -172,25 +172,29 @@ export function Studio() {
             },
         );
         refresh();
+        return true;
       } catch (err) {
         setActiveError(
           err instanceof Error ? err.message : "Could not delete the image.",
         );
+        return false;
       }
     },
     [refresh],
   );
 
   const handleDeleteProject = useCallback(async () => {
-    if (!activeProject) return;
+    if (!activeProject) return false;
     try {
       await api.deleteProject(activeProject.id);
       await refresh();
       setActiveProject(null);
+      return true;
     } catch (err) {
       setActiveError(
         err instanceof Error ? err.message : "Could not delete the project.",
       );
+      return false;
     }
   }, [activeProject, refresh]);
 

@@ -1,11 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRight, WandSparkles } from "lucide-react";
+import Image from "next/image";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Image as ImageIcon,
+  Sparkles,
+  WandSparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { type Project } from "@/lib/studio-data";
+import { COLORWAYS, type Project } from "@/lib/studio-data";
 import { ErrorAlert } from "../shared/error-alert";
-import { PageHeading } from "../shared/page-heading";
+import { EmptyState } from "../shared/empty-state";
 import { ProjectCard } from "../shared/project-card";
 import { StatCard } from "../shared/stat-card";
 import { ViewSkeleton } from "../shared/view-skeleton";
@@ -58,27 +65,97 @@ export function DashboardView({
     (sum, project) => sum + project.images,
     0,
   );
+  const featuredProject = recentProjects[0];
 
   return (
     <>
-      <PageHeading
-        size="large"
-        eyebrow={eyebrow}
-        title={title}
-        description="Turn your next product idea into a complete visual catalog, without the production overhead."
-        actions={
-          <Button
-            variant="outline"
-            size="xl"
-            onClick={onCreate}
-            className="rounded-full bg-transparent"
-          >
-            <WandSparkles data-icon="inline-start" aria-hidden /> Start creating
-          </Button>
-        }
-      />
+      <section className="relative isolate overflow-hidden rounded-3xl bg-primary text-primary-foreground">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_78%_48%,oklch(0.42_0.035_55/0.75),transparent_38%)]" />
+        <div className="grid min-h-[22rem] items-center gap-8 p-6 sm:p-9 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.8fr)] lg:p-12">
+          <div className="max-w-xl">
+            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#c5ad93]">
+              <Sparkles aria-hidden className="size-4" />
+              {eyebrow}
+            </p>
+            <h1 className="mt-4 text-balance font-serif text-4xl tracking-[-0.045em] sm:text-5xl">
+              {title}. Make your next product stand out.
+            </h1>
+            <p className="mt-4 max-w-lg text-pretty leading-relaxed text-primary-foreground/70">
+              Turn a product idea into a complete visual catalog and
+              marketplace-ready content, all from one brief.
+            </p>
+            <Button
+              size="xl"
+              onClick={onCreate}
+              className="mt-7 rounded-full bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              <WandSparkles data-icon="inline-start" aria-hidden />
+              Create a product set
+              <ArrowUpRight data-icon="inline-end" aria-hidden />
+            </Button>
+          </div>
 
-      <dl className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="relative mx-auto w-full max-w-md">
+            <div className="absolute -left-3 top-8 z-10 rounded-xl border border-white/10 bg-primary/80 px-4 py-3 shadow-xl backdrop-blur sm:-left-5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-primary-foreground/55">
+                Studio output
+              </p>
+              <p className="mt-1 text-sm font-medium">
+                {featuredProject
+                  ? `${featuredProject.images} product images`
+                  : "Ready for your first brief"}
+              </p>
+            </div>
+            <div className="relative aspect-[1.25] overflow-hidden rounded-2xl border border-white/15 bg-white/5 shadow-2xl">
+              {featuredProject?.image ? (
+                <Image
+                  src={featuredProject.image}
+                  alt={`${featuredProject.name} generated product photography`}
+                  fill
+                  unoptimized
+                  sizes="(min-width: 1024px) 36vw, 90vw"
+                  className="object-cover"
+                />
+              ) : (
+                <div
+                  aria-hidden
+                  className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(ellipse_at_55%_45%,oklch(0.47_0.035_55),transparent_66%)]"
+                >
+                  <div className="relative grid size-40 place-items-center rounded-full border border-white/15 bg-white/5 shadow-2xl backdrop-blur-sm sm:size-52">
+                    <div className="grid size-28 place-items-center rounded-full border border-white/15 bg-white/5 sm:size-36">
+                      <ImageIcon className="size-12 text-[#c5ad93] sm:size-16" />
+                    </div>
+                    <span className="absolute -right-2 top-8 size-7 rounded-full border-4 border-primary bg-[#b9553b]" />
+                    <span className="absolute -bottom-1 left-7 size-6 rounded-full border-4 border-primary bg-[#3158bd]" />
+                    <span className="absolute -left-2 top-16 size-5 rounded-full border-4 border-primary bg-[#e7dfd0]" />
+                  </div>
+                </div>
+              )}
+              <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 bg-gradient-to-t from-black/75 to-transparent p-5 pt-16">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/65">
+                    {featuredProject ? "Latest project" : "Your next collection"}
+                  </p>
+                  <p className="mt-1 truncate font-medium">
+                    {featuredProject?.name ?? "A new visual world"}
+                  </p>
+                </div>
+                <div aria-hidden className="flex shrink-0 -space-x-1.5">
+                  {COLORWAYS.map(({ name, value }) => (
+                    <span
+                      key={name}
+                      className="size-5 rounded-full border-2 border-primary"
+                      style={{ backgroundColor: value }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <dl className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard
           label="Projects"
           value={String(projects.length)}
@@ -130,9 +207,17 @@ export function DashboardView({
         ) : loading ? (
           <ViewSkeleton />
         ) : recentProjects.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-input p-8 text-center text-sm text-muted-foreground">
-            No projects yet. Start creating to build your first set.
-          </p>
+          <EmptyState
+            icon={<WandSparkles />}
+            title="Your first product set starts here"
+            description="Add a product idea and creative direction to build your first complete visual catalog."
+            action={
+              <Button size="xl" onClick={onCreate} className="rounded-full">
+                <WandSparkles data-icon="inline-start" aria-hidden />
+                Start your first project
+              </Button>
+            }
+          />
         ) : (
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {recentProjects.map((project, index) => (

@@ -17,6 +17,7 @@ import {
   ZoomOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { COLORWAYS } from "@/lib/studio-data";
 import {
   api,
   imageDownloadUrl,
@@ -38,13 +39,6 @@ export type GenerationContext = {
   product: string;
   colors: string[];
   platform: string;
-};
-
-const colorValues: Record<string, string> = {
-  Ink: "#20242a",
-  Bone: "#e7dfd0",
-  Cobalt: "#3158bd",
-  Rust: "#b9553b",
 };
 
 const titleCase = (value: string) =>
@@ -184,16 +178,16 @@ export function ImageDetail({
   ];
 
   return (
-    <div className="min-h-screen bg-[#f7f6f2] text-[#20211f]">
-      <header className="sticky top-0 z-20 flex h-[76px] items-center justify-between border-b border-[#deded7] bg-[#f7f6f2]/90 px-5 backdrop-blur md:px-10">
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-20 flex h-[76px] items-center justify-between border-b bg-background/90 px-5 backdrop-blur md:px-10">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-sm text-[#777871] transition hover:text-[#20211f]"
+          className="flex min-h-11 items-center gap-2 rounded-md text-sm text-muted-foreground transition hover:text-foreground"
         >
           <ArrowLeft className="size-4" /> Image library
         </button>
         <div className="flex items-center gap-2">
-          <span className="mr-2 hidden text-sm text-[#85867f] sm:block">
+          <span className="mr-2 hidden text-sm text-muted-foreground sm:block">
             {index + 1} / {images.length}
           </span>
           <Button
@@ -218,7 +212,7 @@ export function ImageDetail({
           </Button>
           <a
             href={imageDownloadUrl(image.id)}
-            className="ml-2 inline-flex h-9 items-center gap-2 rounded-full bg-[#20211f] px-4 text-sm font-medium text-white transition hover:bg-[#343531]"
+            className="ml-2 inline-flex h-9 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/85"
           >
             <Download className="size-4" /> Download
           </a>
@@ -229,7 +223,7 @@ export function ImageDetail({
         <section className="lg:sticky lg:top-[108px] lg:self-start">
           <button
             onClick={() => setViewer(true)}
-            className="group relative block w-full overflow-hidden rounded-2xl border border-[#deded7] bg-[#edeae2] shadow-sm"
+            className="group relative block w-full overflow-hidden rounded-2xl border bg-muted shadow-sm"
             aria-label="Open image viewer"
           >
             <img
@@ -245,7 +239,7 @@ export function ImageDetail({
               }
               className="aspect-square w-full object-cover"
             />
-            <span className="absolute bottom-4 right-4 flex items-center gap-2 rounded-full bg-[#20211f]/85 px-4 py-2 text-xs font-medium text-white opacity-0 backdrop-blur transition group-hover:opacity-100">
+            <span className="absolute bottom-4 right-4 flex items-center gap-2 rounded-full bg-primary/85 px-4 py-2 text-xs font-medium text-primary-foreground opacity-0 backdrop-blur transition group-hover:opacity-100">
               <Maximize2 className="size-3.5" /> Open viewer
             </span>
           </button>
@@ -254,7 +248,7 @@ export function ImageDetail({
               <button
                 key={i}
                 onClick={() => onIndexChange(i)}
-                className={`size-16 shrink-0 overflow-hidden rounded-lg border-2 transition ${i === index ? "border-[#a0785d]" : "border-transparent opacity-60 hover:opacity-100"}`}
+                className={`size-16 shrink-0 overflow-hidden rounded-lg border-2 transition ${i === index ? "border-accent" : "border-transparent opacity-60 hover:opacity-100"}`}
                 aria-label={`View image ${i + 1}`}
               >
                 <img
@@ -268,16 +262,16 @@ export function ImageDetail({
         </section>
 
         <section className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#a0785d]">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-text">
             {details?.category ?? "Image details"}
           </p>
           {loading && !details ? (
             <div className="mt-4 space-y-3" aria-busy="true">
-              <div className="h-10 w-3/4 animate-pulse rounded-lg bg-[#e5e4dc]" />
-              <div className="h-4 w-1/2 animate-pulse rounded bg-[#e5e4dc]" />
-              <div className="h-24 animate-pulse rounded-xl bg-[#e5e4dc]" />
-              <p className="flex items-center gap-2 pt-2 text-sm text-[#85867f]">
-                <Sparkles className="size-4 animate-pulse text-[#a0785d]" />{" "}
+              <div className="h-10 w-3/4 animate-pulse rounded-lg bg-muted" />
+              <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+              <div className="h-24 animate-pulse rounded-xl bg-muted" />
+              <p className="flex items-center gap-2 pt-2 text-sm text-muted-foreground">
+                <Sparkles className="size-4 animate-pulse text-accent-text" />{" "}
                 Writing product details with AI…
               </p>
             </div>
@@ -288,7 +282,7 @@ export function ImageDetail({
                   titleCase(context.product || "Product image")}
               </h1>
               {details && (
-                <p className="mt-2 text-lg text-[#777871]">{details.tagline}</p>
+                <p className="mt-2 text-lg text-muted-foreground">{details.tagline}</p>
               )}
             </>
           )}
@@ -296,16 +290,16 @@ export function ImageDetail({
           {error && (
             <div
               role="alert"
-              className="mt-6 flex items-start gap-3 rounded-2xl border border-[#e8c9bd] bg-[#fbefe9] p-4 text-[#7a3b27]"
+              className="mt-6 flex items-start gap-3 rounded-2xl border border-destructive/20 bg-destructive-soft p-4 text-destructive"
             >
-              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#f3d6c9]">
+              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-destructive/10">
                 <AlertTriangle className="size-[18px]" />
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold">
                   We couldn’t write the product details
                 </p>
-                <p className="mt-1 break-words text-sm text-[#8f5440]">
+                <p className="mt-1 break-words text-sm">
                   {error}
                 </p>
               </div>
@@ -313,7 +307,7 @@ export function ImageDetail({
                 size="sm"
                 variant="outline"
                 onClick={loadDetails}
-                className="rounded-full border-[#e0b9a9] bg-transparent"
+                className="rounded-full border-destructive/20 bg-transparent"
               >
                 <RefreshCw data-icon="inline-start" /> Retry
               </Button>
@@ -331,7 +325,7 @@ export function ImageDetail({
                   />
                 }
               >
-                <p className="leading-relaxed text-[#4d4e48]">
+                <p className="leading-relaxed text-muted-foreground">
                   {details.description}
                 </p>
               </Block>
@@ -340,9 +334,9 @@ export function ImageDetail({
                   {details.features.map((feature) => (
                     <li
                       key={feature}
-                      className="flex gap-3 text-sm text-[#4d4e48]"
+                      className="flex gap-3 text-sm text-muted-foreground"
                     >
-                      <Check className="mt-0.5 size-4 shrink-0 text-[#a0785d]" />
+                      <Check className="mt-0.5 size-4 shrink-0 text-accent-text" />
                       <span>{feature}</span>
                     </li>
                   ))}
@@ -369,7 +363,7 @@ export function ImageDetail({
                   {details.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-full bg-[#20211f] px-3 py-1 text-xs text-[#f7f6f2]"
+                      className="rounded-full bg-primary px-3 py-1 text-xs text-primary-foreground"
                     >
                       {tag}
                     </span>
@@ -379,7 +373,7 @@ export function ImageDetail({
                   {details.keywords.map((keyword) => (
                     <span
                       key={keyword}
-                      className="rounded-full border border-[#d6d5cd] bg-white px-3 py-1 text-xs text-[#656660]"
+                      className="rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground"
                     >
                       {keyword}
                     </span>
@@ -395,12 +389,12 @@ export function ImageDetail({
                   />
                 }
               >
-                <p className="text-sm text-[#4d4e48]">{details.altText}</p>
+                <p className="text-sm text-muted-foreground">{details.altText}</p>
               </Block>
               <button
                 onClick={loadDetails}
                 disabled={loading}
-                className="mt-4 flex items-center gap-2 text-sm text-[#a0785d] disabled:opacity-50"
+                className="mt-4 flex min-h-11 items-center gap-2 rounded-md px-2 text-sm text-accent-text transition hover:bg-accent-soft disabled:opacity-50"
               >
                 <RefreshCw
                   className={`size-4 ${loading ? "animate-spin" : ""}`}
@@ -414,21 +408,25 @@ export function ImageDetail({
             <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
               {specs.map(([label, value]) => (
                 <div key={label}>
-                  <dt className="text-xs text-[#85867f]">{label}</dt>
+                  <dt className="text-xs text-muted-foreground">{label}</dt>
                   <dd className="mt-0.5 text-sm font-medium">{value}</dd>
                 </div>
               ))}
               <div className="col-span-2">
-                <dt className="text-xs text-[#85867f]">Colorways</dt>
+                <dt className="text-xs text-muted-foreground">Colorways</dt>
                 <dd className="mt-1.5 flex flex-wrap gap-2">
                   {context.colors.map((name) => (
                     <span
                       key={name}
-                      className="flex items-center gap-2 rounded-full border border-[#deded7] bg-white px-3 py-1 text-xs"
+                      className="flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs"
                     >
                       <span
                         className="size-3 rounded-full border border-black/10"
-                        style={{ background: colorValues[name] ?? "#ccc" }}
+                        style={{
+                          background:
+                            COLORWAYS.find((color) => color.name === name)
+                              ?.value ?? "var(--muted)",
+                        }}
                       />
                       {name}
                     </span>
@@ -525,7 +523,7 @@ function Block({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mt-6 rounded-2xl border border-[#deded7] bg-white p-5">
+    <div className="mt-6 rounded-2xl border bg-card p-5">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-sm font-semibold tracking-[-0.01em]">{title}</h2>
         {action}
@@ -537,8 +535,8 @@ function Block({
 
 function Fact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-[#deded7] bg-white p-5">
-      <p className="text-xs text-[#85867f]">{label}</p>
+    <div className="rounded-2xl border bg-card p-5">
+      <p className="text-xs text-muted-foreground">{label}</p>
       <p className="mt-1.5 text-sm">{value}</p>
     </div>
   );
@@ -554,7 +552,7 @@ function CopyButton({
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1.5 text-xs text-[#a0785d]"
+      className="flex min-h-11 items-center gap-1.5 rounded-md px-2 text-xs text-accent-text transition hover:bg-accent-soft"
     >
       {active ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
       {active ? "Copied" : "Copy"}

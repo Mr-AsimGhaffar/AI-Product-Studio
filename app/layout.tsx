@@ -15,7 +15,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "AI product studio",
+  title: "AI Product Studio",
   description:
     "Create professional product imagery and marketplace-ready listings from one brief.",
   icons: { icon: "/favicon.ico" },
