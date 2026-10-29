@@ -31,8 +31,8 @@ export const imageInput = z.object({
 export const insertImage = async (db, projectId, image) => {
   const data = Buffer.from(image.base64, "base64");
   const { rows } = await db.query(
-    `INSERT INTO images (project_id, angle, prompt, model, media_type, data, size_bytes, details)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING ${IMAGE_COLUMNS}`,
+    `INSERT INTO images (project_id, angle, prompt, model, media_type, data, size_bytes, details, created_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, clock_timestamp()) RETURNING ${IMAGE_COLUMNS}`,
     [
       projectId,
       image.angle ?? null,
@@ -69,7 +69,7 @@ imagesRouter.get(
         ? null
         : parse(idSchema, req.query.projectId);
     const { rows } = await pool.query(
-      `SELECT ${IMAGE_COLUMNS} FROM images WHERE ($1::uuid IS NULL OR project_id = $1) ORDER BY created_at DESC, id`,
+      `SELECT ${IMAGE_COLUMNS} FROM images WHERE ($1::uuid IS NULL OR project_id = $1) ORDER BY created_at ${projectId ? "ASC" : "DESC"}, id`,
       [projectId],
     );
     res.json({ images: rows.map(serializeImage) });

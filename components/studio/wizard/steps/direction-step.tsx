@@ -1,4 +1,5 @@
-import { Check } from 'lucide-react'
+import { useState } from 'react'
+import { Check, X } from 'lucide-react'
 import { COLORWAYS, MODEL_LOOKS, PHOTO_SETS, PHOTO_STYLES } from '@/lib/studio-data'
 import { cn } from '@/lib/utils'
 import type { StepProps } from '../types'
@@ -6,6 +7,7 @@ import { ChoiceChip } from '../../shared/choice-chip'
 import { SelectField } from '../../shared/field'
 
 export function DirectionStep({ brief, update, toggleColor }: StepProps) {
+  const [pickedColor, setPickedColor] = useState('#3158bd')
   return (
     <div className="flex flex-col gap-8">
       <fieldset>
@@ -22,6 +24,33 @@ export function DirectionStep({ brief, update, toggleColor }: StepProps) {
               </ChoiceChip>
             )
           })}
+          {brief.colors
+            .filter((name) => !COLORWAYS.some((color) => color.name === name))
+            .map((hex) => (
+              <ChoiceChip key={hex} tone="light" selected onClick={() => toggleColor(hex)} className="rounded-full" aria-label={`Remove ${hex}`}>
+                <span aria-hidden className="size-4 rounded-full border border-black/10" style={{ backgroundColor: hex }} />
+                {hex.toUpperCase()}
+                <X aria-hidden className="size-3" />
+              </ChoiceChip>
+            ))}
+          <div className="inline-flex items-center gap-2 rounded-full border border-dashed border-input py-1 pl-2 pr-1 text-sm">
+            <input
+              type="color"
+              aria-label="Pick a custom color"
+              value={pickedColor}
+              onChange={(event) => setPickedColor(event.target.value.toLowerCase())}
+              className="size-7 cursor-pointer rounded-full border-0 bg-transparent p-0"
+            />
+            <span className="tabular-nums text-muted-foreground">{pickedColor.toUpperCase()}</span>
+            <button
+              type="button"
+              disabled={brief.colors.includes(pickedColor)}
+              onClick={() => toggleColor(pickedColor)}
+              className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition active:scale-[0.97] disabled:opacity-50"
+            >
+              Add
+            </button>
+          </div>
         </div>
       </fieldset>
 

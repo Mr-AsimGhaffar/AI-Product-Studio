@@ -32,8 +32,8 @@ export const DEFAULT_BRIEF: Brief = {
   projectName: '',
 }
 
-export const countImages = (brief: Pick<Brief, 'designs' | 'colors' | 'photoSet'>) =>
-  brief.designs * brief.colors.length * brief.photoSet
+// Generation produces one image per selected angle, so the total equals the photo set size.
+export const countImages = (brief: Pick<Brief, 'photoSet'>) => brief.photoSet
 
 export const imageSrc = (image: GeneratedImage) => `data:${image.mediaType};base64,${image.base64}`
 

@@ -21,6 +21,9 @@ export const COLORWAYS = [
   { name: 'Rust', value: '#b9553b' },
 ]
 
+export const colorValue = (name: string) =>
+  /^#[0-9a-f]{6}$/i.test(name) ? name : COLORWAYS.find((color) => color.name === name)?.value
+
 export const PLATFORMS = ['Amazon', 'eBay', 'Etsy', 'Website', 'Daraz', 'Alibaba']
 export const STYLES = ['Casual', 'Formal', 'Streetwear', 'Luxury', 'Minimalist']
 export const MATERIALS = ['Leather', 'Cotton', 'Denim', 'Wool', 'Custom']

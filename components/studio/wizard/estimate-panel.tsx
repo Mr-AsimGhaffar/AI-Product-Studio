@@ -1,5 +1,5 @@
 import type { Brief } from '@/lib/brief'
-import { COLORWAYS } from '@/lib/studio-data'
+import { colorValue } from '@/lib/studio-data'
 import { SummaryRow } from '../shared/summary-row'
 
 type EstimatePanelProps = { brief: Brief; totalImages: number }
@@ -22,13 +22,12 @@ export function EstimatePanel({ brief, totalImages }: EstimatePanelProps) {
           </div>
           <div className="absolute inset-x-0 bottom-0 flex justify-center gap-1.5 bg-gradient-to-t from-background/90 to-transparent px-3 pb-3 pt-8">
             {brief.colors.map((name) => {
-              const color = COLORWAYS.find((item) => item.name === name)
               return (
                 <span
                   key={name}
                   title={name}
                   className="size-4 rounded-full border border-black/10 shadow-sm"
-                  style={{ backgroundColor: color?.value ?? 'var(--muted)' }}
+                  style={{ backgroundColor: colorValue(name) ?? 'var(--muted)' }}
                 />
               )
             })}
@@ -53,8 +52,7 @@ export function EstimatePanel({ brief, totalImages }: EstimatePanelProps) {
         <SummaryRow label="Images / color" value={String(brief.photoSet)} />
       </dl>
       <p className="mt-4 rounded-lg bg-accent-soft p-3 text-xs leading-relaxed text-muted-foreground">
-        {brief.designs} designs × {brief.colors.length} colorways × {brief.photoSet} views
-        {" "}per colorway
+        {brief.photoSet} {brief.photoSet === 1 ? "view" : "views"} generated per project
       </p>
     </aside>
   )

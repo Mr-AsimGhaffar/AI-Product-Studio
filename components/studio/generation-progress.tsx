@@ -28,7 +28,7 @@ export function GenerationProgress({ product, totalImages, onCancel }: Generatio
         <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-accent-text">Creative engine</p>
         <h1 className="mt-3 text-balance font-serif text-3xl tracking-[-0.045em] sm:text-4xl">Building your product world.</h1>
         <p className="mx-auto mt-3 max-w-md text-pretty text-muted-foreground">
-          Creating {totalImages} image{totalImages === 1 ? '' : 's'} for {product || 'your product'} across every selected color and angle.
+          Creating {totalImages} image{totalImages === 1 ? '' : 's'} for {product || 'your product'} across the selected angles.
         </p>
         <div role="progressbar" aria-label="Generating images" className="relative mt-10 h-2 overflow-hidden rounded-full bg-secondary">
           <div className="absolute inset-y-0 left-0 w-2/5 animate-indeterminate rounded-full bg-accent" />

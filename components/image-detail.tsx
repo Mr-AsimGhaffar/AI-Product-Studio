@@ -17,7 +17,7 @@ import {
   ZoomOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { COLORWAYS } from "@/lib/studio-data";
+import { colorValue } from "@/lib/studio-data";
 import {
   api,
   imageDownloadUrl,
@@ -424,8 +424,7 @@ export function ImageDetail({
                         className="size-3 rounded-full border border-black/10"
                         style={{
                           background:
-                            COLORWAYS.find((color) => color.name === name)
-                              ?.value ?? "var(--muted)",
+                            colorValue(name) ?? "var(--muted)",
                         }}
                       />
                       {name}
