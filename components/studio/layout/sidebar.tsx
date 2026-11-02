@@ -25,6 +25,7 @@ export function Brand() {
         alt="AI Product Studio"
         width={100}
         height={100}
+        style={{ width: "auto", height: "auto" }}
         loading="eager"
       />
     </div>
